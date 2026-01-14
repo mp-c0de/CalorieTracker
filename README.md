@@ -60,13 +60,26 @@ A comprehensive iOS calorie and nutrition tracking app with AI-powered features,
 
 ## Screenshots
 
-| Dashboard | Vitamins | History |
-|-----------|----------|---------|
-| Calorie ring with macros | AI-analysed vitamins & minerals | 14-day calorie chart |
+<p align="center">
+  <img src="Screenshots/dashboard.png" width="250" alt="Dashboard">
+  <img src="Screenshots/vitamins.png" width="250" alt="Vitamins">
+  <img src="Screenshots/history.png" width="250" alt="History">
+</p>
 
-| Add Food | Scan Label | Settings |
-|----------|------------|----------|
-| AI quick add & search | Camera nutrition scanning | Profile & AI config |
+<p align="center">
+  <img src="Screenshots/add-food.png" width="250" alt="Add Food">
+  <img src="Screenshots/products.png" width="250" alt="Products">
+  <img src="Screenshots/settings.png" width="250" alt="Settings">
+</p>
+
+| Screen | Description |
+|--------|-------------|
+| **Dashboard** | Main calorie ring with daily progress and macros breakdown |
+| **Vitamins** | AI-analysed vitamins & minerals from your daily food intake |
+| **History** | Interactive 14-day calorie history chart |
+| **Add Food** | AI quick add, recent products, and food search |
+| **Products** | Your saved products database |
+| **Settings** | Profile, daily targets, HealthKit, and AI configuration |
 
 ---
 
