@@ -116,16 +116,19 @@ final class HealthKitManager {
                 options: .cumulativeSum
             ) { [weak self] _, result, error in
                 Task { @MainActor in
-                    if error == nil {
-                        // Successfully queried - we have authorization
+                    // HealthKit queries can return nil result with no error if no data exists
+                    // This is still valid authorization - user just has no steps yet today
+                    // Only treat explicit authorization errors as unauthorized
+                    if let error = error as? HKError, error.code == .errorAuthorizationDenied {
+                        self?.isAuthorized = false
+                        self?.authorizationStatus = "Not Authorized"
+                        UserDefaults.standard.set(false, forKey: "healthKitAuthorized")
+                    } else {
+                        // No error or non-authorization error means we're still authorized
                         self?.isAuthorized = true
                         self?.authorizationStatus = "Authorized"
                         // Fetch all data
                         await self?.fetchTodayData()
-                    } else {
-                        // Error means no authorization or user revoked it
-                        self?.isAuthorized = false
-                        self?.authorizationStatus = "Not Authorized"
                     }
                     continuation.resume()
                 }

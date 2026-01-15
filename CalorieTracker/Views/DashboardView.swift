@@ -20,6 +20,12 @@ struct DashboardView: View {
     @State private var selectedHistoryPoint: DailyLog?
     @State private var showingVitaminInfo = false
 
+    // User's saved daily targets from Settings
+    @AppStorage("dailyCalorieTarget") private var savedCalorieTarget = 2000.0
+    @AppStorage("dailyProteinTarget") private var savedProteinTarget = 50.0
+    @AppStorage("dailyCarbTarget") private var savedCarbTarget = 250.0
+    @AppStorage("dailyFatTarget") private var savedFatTarget = 65.0
+
     private var todayLog: DailyLog? {
         allLogs.first { Calendar.current.isDateInToday($0.date) }
     }
@@ -970,41 +976,28 @@ struct DashboardView: View {
                         Rectangle()
                             .fill(.clear)
                             .contentShape(Rectangle())
-                            .gesture(
-                                DragGesture(minimumDistance: 0)
-                                    .onChanged { value in
-                                        let xPosition = value.location.x
-                                        if let date: Date = proxy.value(atX: xPosition) {
-                                            let sortedLogsArray = Array(sortedLogs)
-                                            // Find closest log to the touched date
-                                            if let closest = sortedLogsArray.min(by: {
-                                                abs($0.date.timeIntervalSince(date)) < abs($1.date.timeIntervalSince(date))
-                                            }) {
-                                                selectedHistoryPoint = closest
+                            .onTapGesture { location in
+                                let xPosition = location.x
+                                if let date: Date = proxy.value(atX: xPosition) {
+                                    let sortedLogsArray = Array(sortedLogs)
+                                    // Find closest log to the touched date
+                                    if let closest = sortedLogsArray.min(by: {
+                                        abs($0.date.timeIntervalSince(date)) < abs($1.date.timeIntervalSince(date))
+                                    }) {
+                                        selectedHistoryPoint = closest
+                                        // Auto-dismiss after 3 seconds
+                                        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                                            if selectedHistoryPoint?.id == closest.id {
+                                                selectedHistoryPoint = nil
                                             }
                                         }
                                     }
-                                    .onEnded { _ in
-                                        // Keep selection visible for a moment
-                                        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                                            selectedHistoryPoint = nil
-                                        }
-                                    }
-                            )
+                                }
+                            }
                     }
                 }
                 .frame(maxHeight: .infinity)
                 .padding(.horizontal, 4)
-
-                // Tap hint
-                HStack {
-                    Image(systemName: "hand.tap")
-                        .font(.caption2)
-                    Text("Tap on points to see details")
-                        .font(.caption2)
-                }
-                .foregroundStyle(.secondary)
-                .padding(.bottom, 8)
 
             } else {
                 // Not enough data
@@ -1118,8 +1111,28 @@ struct DashboardView: View {
     }
 
     private func ensureTodayLogExists() {
-        if todayLog == nil {
-            let newLog = DailyLog()
+        if let log = todayLog {
+            // Sync targets if user changed them in settings
+            if log.calorieTarget != savedCalorieTarget {
+                log.calorieTarget = savedCalorieTarget
+            }
+            if log.proteinTarget != savedProteinTarget {
+                log.proteinTarget = savedProteinTarget
+            }
+            if log.carbTarget != savedCarbTarget {
+                log.carbTarget = savedCarbTarget
+            }
+            if log.fatTarget != savedFatTarget {
+                log.fatTarget = savedFatTarget
+            }
+        } else {
+            // Create new log with user's saved targets
+            let newLog = DailyLog(
+                calorieTarget: savedCalorieTarget,
+                proteinTarget: savedProteinTarget,
+                carbTarget: savedCarbTarget,
+                fatTarget: savedFatTarget
+            )
             modelContext.insert(newLog)
         }
     }
