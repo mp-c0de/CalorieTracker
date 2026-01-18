@@ -44,12 +44,10 @@ enum UnitSystem: String, CaseIterable, Codable {
 }
 
 struct SettingsView: View {
+    @Environment(\.dismiss) private var dismiss
     @State private var aiManager = AIServiceManager.shared
     @State private var healthManager = HealthKitManager.shared
     @State private var cloudSettings = CloudSettingsManager.shared
-
-    // Tab bar visibility control for smooth animation
-    @State private var hideTabBar = false
 
     // Imperial input helpers
     @State private var heightFeet: Int = 5
@@ -208,18 +206,6 @@ struct SettingsView: View {
             isKeyboardVisible = false
         }
         .navigationTitle("Settings")
-        .toolbar(hideTabBar ? .hidden : .visible, for: .tabBar)
-        .animation(.easeInOut(duration: 0.25), value: hideTabBar)
-        .onAppear {
-            withAnimation(.easeInOut(duration: 0.2)) {
-                hideTabBar = true
-            }
-        }
-        .onDisappear {
-            withAnimation(.easeInOut(duration: 0.2)) {
-                hideTabBar = false
-            }
-        }
         .confirmationDialog(
             "Reset All Data",
             isPresented: $showingResetConfirmation,
@@ -758,16 +744,6 @@ struct SettingsView: View {
                 }
             }
 
-            // Show tutorial again
-            Button {
-                TutorialManager.shared.startTutorial()
-            } label: {
-                HStack {
-                    Image(systemName: "hand.point.up.left.fill")
-                        .foregroundStyle(.blue)
-                    Text("Show Tutorial Again")
-                }
-            }
         }
     }
 
@@ -818,6 +794,23 @@ struct SettingsView: View {
                     Image(systemName: "chevron.right")
                         .font(.caption)
                         .foregroundStyle(.secondary)
+                }
+            }
+
+            // Reset Tutorial Hints
+            Button {
+                print("DEBUG: Reset Tutorial Hints button pressed")
+                TutorialManager.shared.resetAllHints()
+                print("DEBUG: resetAllHints() completed, dismissing settings...")
+                // Small delay to let reset complete, then dismiss
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    print("DEBUG: Dismissing SettingsView after reset")
+                    dismiss()
+                }
+            } label: {
+                HStack {
+                    Image(systemName: "arrow.counterclockwise")
+                    Text("Reset Tutorial Hints")
                 }
             }
 

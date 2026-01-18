@@ -6,6 +6,7 @@ import SwiftData
 import HealthKit
 import Combine
 import Charts
+import TipKit
 
 struct DashboardView: View {
     @Environment(\.modelContext) private var modelContext
@@ -22,6 +23,13 @@ struct DashboardView: View {
     @State private var isKeyboardVisible = false
     @State private var showingManualCaloriesSheet = false
     @State private var manualCaloriesInput = ""
+
+    // Tutorial manager for sequential tips - @State to observe changes
+    @State private var tutorial = TutorialManager.shared
+
+    // Settings sheet
+    @State private var showingSettings = false
+    @State private var tipRefreshTrigger = UUID()
 
     // Shared date manager - allows viewing previous days and logging to correct date
     // Note: @Observable classes don't need @State - SwiftUI tracks changes automatically
@@ -130,13 +138,14 @@ struct DashboardView: View {
                             .foregroundStyle(.primary)
                     }
 
-                    NavigationLink {
-                        SettingsView()
+                    Button {
+                        showingSettings = true
                     } label: {
                         Image(systemName: "gear")
                             .font(.title3)
                             .foregroundStyle(.primary)
                     }
+                    .tutorialAnchor(for: .settings)
                 }
             }
             .sheet(isPresented: $showingDonation) {
@@ -145,6 +154,15 @@ struct DashboardView: View {
             .sheet(isPresented: $showingHistory) {
                 HistoryView()
             }
+            .sheet(isPresented: $showingSettings, onDismiss: {
+                // Refresh tips when settings is dismissed (in case user reset tips)
+                tipRefreshTrigger = UUID()
+            }) {
+                NavigationStack {
+                    SettingsView()
+                }
+            }
+            .id(tipRefreshTrigger)
             .safeAreaInset(edge: .bottom) {
                 // Custom keyboard Done button - workaround for SwiftUI toolbar bug
                 if isKeyboardVisible {
@@ -167,6 +185,7 @@ struct DashboardView: View {
                 isKeyboardVisible = false
             }
             .onAppear {
+                print("DEBUG: DashboardView onAppear - tutorial step: \(tutorial.currentStep)")
                 ensureTodayLogExists()
                 // Always check and fetch HealthKit data on appear
                 healthManager.checkAuthorizationStatus()
@@ -315,6 +334,14 @@ struct DashboardView: View {
             }
             .tabViewStyle(.page(indexDisplayMode: .always))
             .frame(height: 480)
+            .tutorialAnchor(for: .calorieRing)
+            .onChange(of: selectedRingPage) { _, newValue in
+                // If user swipes to vitamins/history, they've learned the swipe gesture
+                if newValue != 0 && tutorial.currentStep == .swipeVitamins {
+                    print("DEBUG: User swiped, advancing past SwipeVitaminsTip")
+                    tutorial.advanceToNextStep()
+                }
+            }
 
             // Swipe hint outside the cards
             HStack {
@@ -324,6 +351,7 @@ struct DashboardView: View {
                     .font(.caption)
             }
             .foregroundStyle(.secondary)
+            .tutorialAnchor(for: .swipeVitamins)
         }
     }
 

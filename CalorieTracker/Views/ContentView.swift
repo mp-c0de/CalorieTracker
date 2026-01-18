@@ -3,68 +3,107 @@
 
 import SwiftUI
 import SwiftData
+import TipKit
 
 struct ContentView: View {
     @State private var selectedTab = 0
-    var tutorialManager: TutorialManager = TutorialManager.shared
 
-    // Tab bar height for coach mark positioning
-    private let tabBarHeight: CGFloat = 83
+    // Observe tutorial state directly - this forces SwiftUI to re-render when it changes
+    private var tutorialManager: TutorialManager { TutorialManager.shared }
+
+    var body: some View {
+        // Access tutorialManager properties to trigger observation tracking
+        let currentStep = tutorialManager.currentStep
+        let isShowingTutorial = tutorialManager.isShowingTutorial
+
+        GeometryReader { geometry in
+            ZStack {
+                TabView(selection: $selectedTab) {
+                    Tab("Today", systemImage: "flame.fill", value: 0) {
+                        DashboardView()
+                    }
+
+                    Tab("Add Food", systemImage: "plus.circle.fill", value: 1) {
+                        AddFoodView()
+                    }
+
+                    Tab("Products", systemImage: "barcode.viewfinder", value: 2) {
+                        ProductListView()
+                            .tutorialAnchor(for: .productsTab)
+                    }
+
+                    Tab("Manual", systemImage: "square.and.pencil", value: 3) {
+                        ManualProductsView()
+                            .tutorialAnchor(for: .manualTab)
+                    }
+
+                    Tab("AI Logs", systemImage: "doc.text.magnifyingglass", value: 4) {
+                        AILogView()
+                            .tutorialAnchor(for: .aiLogsTab)
+                    }
+                }
+
+                // Tutorial overlay - directly in ZStack for proper observation
+                if isShowingTutorial {
+                    TutorialOverlayContent(
+                        selectedTab: $selectedTab,
+                        currentStep: currentStep,
+                        geometry: geometry
+                    )
+                }
+            }
+        }
+    }
+}
+
+// MARK: - Tutorial Overlay Content
+struct TutorialOverlayContent: View {
+    @Binding var selectedTab: Int
+    let currentStep: TutorialStep
+    let geometry: GeometryProxy
 
     var body: some View {
         ZStack {
-            TabView(selection: $selectedTab) {
-                Tab("Today", systemImage: "flame.fill", value: 0) {
-                    DashboardView()
+            // Dark backdrop
+            Color.black.opacity(0.6)
+                .ignoresSafeArea()
+                .onTapGesture {
+                    // Block taps on backdrop
                 }
 
-                Tab("Add Food", systemImage: "plus.circle.fill", value: 1) {
-                    AddFoodView()
-                }
+            // Centered tooltip card
+            VStack {
+                Spacer()
 
-                Tab("Products", systemImage: "barcode.viewfinder", value: 2) {
-                    ProductListView()
-                }
-
-                Tab("Manual", systemImage: "square.and.pencil", value: 3) {
-                    ManualProductsView()
-                }
-
-                Tab("AI Logs", systemImage: "doc.text.magnifyingglass", value: 4) {
-                    AILogView()
-                }
-            }
-            .onChange(of: tutorialManager.currentCoachMarkIndex) { _, newIndex in
-                // Auto-navigate to the tab being highlighted
-                if tutorialManager.isShowingTutorial,
-                   let coachMark = tutorialManager.currentCoachMark,
-                   let tabIndex = coachMark.tabIndex {
-                    withAnimation {
-                        selectedTab = tabIndex
+                TutorialCardSimple(
+                    step: currentStep,
+                    onGotIt: {
+                        withAnimation(.spring(duration: 0.3)) {
+                            TutorialManager.shared.advanceToNextStep()
+                            // Auto-switch tab if next step is on different tab
+                            if let nextTab = TutorialManager.shared.currentStep.tabIndex,
+                               nextTab != selectedTab {
+                                selectedTab = nextTab
+                            }
+                        }
+                    },
+                    onSkip: {
+                        withAnimation(.spring(duration: 0.3)) {
+                            TutorialManager.shared.skipTutorial()
+                        }
                     }
-                }
-            }
-
-            // Tutorial overlay
-            if tutorialManager.isShowingTutorial, let coachMark = tutorialManager.currentCoachMark {
-                CoachMarkOverlay(
-                    coachMark: coachMark,
-                    currentStep: tutorialManager.currentCoachMarkIndex + 1,
-                    totalSteps: tutorialManager.coachMarks.count,
-                    tabBarHeight: tabBarHeight,
-                    onNext: { tutorialManager.nextStep() },
-                    onSkip: { tutorialManager.skipTutorial() }
                 )
-                .transition(.opacity)
-                .animation(.easeInOut(duration: 0.3), value: tutorialManager.isShowingTutorial)
+                .padding(.horizontal, 24)
+
+                Spacer()
             }
         }
-        .onAppear {
-            // Start tutorial if requested from onboarding
-            if tutorialManager.shouldStartTutorial {
-                tutorialManager.shouldStartTutorial = false
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                    tutorialManager.startTutorial()
+        .animation(.spring(duration: 0.35), value: currentStep)
+        .onChange(of: currentStep) { _, newStep in
+            // Auto-switch tab when step changes
+            if let targetTab = newStep.tabIndex, targetTab != selectedTab {
+                withAnimation {
+                    selectedTab = targetTab
                 }
             }
         }
@@ -74,4 +113,10 @@ struct ContentView: View {
 #Preview {
     ContentView()
         .modelContainer(for: [Product.self, FoodEntry.self, DailyLog.self, AIFoodTemplate.self, AILogEntry.self], inMemory: true)
+        .task {
+            try? Tips.configure([
+                .displayFrequency(.immediate),
+                .datastoreLocation(.applicationDefault)
+            ])
+        }
 }

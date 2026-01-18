@@ -3,6 +3,7 @@
 
 import SwiftUI
 import SwiftData
+import TipKit
 
 // Helper struct for passing barcode to sheet
 struct BarcodeItem: Identifiable {
@@ -277,6 +278,7 @@ struct AddFoodView: View {
                     .font(.headline)
                     .fontWeight(.bold)
             }
+            .tutorialAnchor(for: .addFoodTab)
 
             HStack(spacing: 12) {
                 TextField("e.g., \"I had one apple\"", text: $quickInputText)
@@ -308,6 +310,7 @@ struct AddFoodView: View {
                 }
                 .disabled(quickInputText.isEmpty || isProcessingAI)
             }
+            .tutorialAnchor(for: .aiQuickAdd)
 
             Text("Describe what you ate and AI will estimate the calories")
                 .font(.caption)
@@ -328,21 +331,24 @@ struct AddFoodView: View {
     }
 
     private var actionButtonsSection: some View {
-        HStack(spacing: 12) {
-            ModernActionButton(
-                title: "Scan Barcode",
-                icon: "barcode.viewfinder",
-                gradientColors: [.blue, .blue.opacity(0.8)]
-            ) {
-                showingScanner = true
-            }
+        VStack(spacing: 12) {
+            HStack(spacing: 12) {
+                ModernActionButton(
+                    title: "Scan Barcode",
+                    icon: "barcode.viewfinder",
+                    gradientColors: [.blue, .blue.opacity(0.8)]
+                ) {
+                    showingScanner = true
+                }
+                .tutorialAnchor(for: .scanBarcode)
 
-            ModernActionButton(
-                title: "Manual Entry",
-                icon: "square.and.pencil",
-                gradientColors: [.orange, .orange.opacity(0.8)]
-            ) {
-                showingManualEntryWithoutBarcode = true
+                ModernActionButton(
+                    title: "Manual Entry",
+                    icon: "square.and.pencil",
+                    gradientColors: [.orange, .orange.opacity(0.8)]
+                ) {
+                    showingManualEntryWithoutBarcode = true
+                }
             }
         }
     }

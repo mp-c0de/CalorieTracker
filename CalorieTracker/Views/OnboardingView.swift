@@ -4,7 +4,7 @@
 import SwiftUI
 
 struct OnboardingView: View {
-    let onComplete: (Bool) -> Void  // Bool indicates whether to show tutorial
+    let onComplete: () -> Void
 
     @State private var currentStep = 0
     @State private var cloudSettings = CloudSettingsManager.shared
@@ -602,11 +602,11 @@ struct OnboardingView: View {
 
             VStack(spacing: 12) {
                 Button {
-                    onComplete(true)  // Start tutorial
+                    onComplete()
                 } label: {
                     HStack {
-                        Image(systemName: "hand.point.up.left.fill")
-                        Text("Start Tutorial")
+                        Image(systemName: "arrow.right.circle.fill")
+                        Text("Get Started")
                     }
                     .font(.headline)
                     .foregroundStyle(.blue)
@@ -614,14 +614,6 @@ struct OnboardingView: View {
                     .padding(.vertical, 16)
                     .background(Color.white)
                     .clipShape(RoundedRectangle(cornerRadius: 14))
-                }
-
-                Button {
-                    onComplete(false)  // Skip tutorial
-                } label: {
-                    Text("Skip, I'll explore myself")
-                        .font(.subheadline)
-                        .foregroundStyle(.white.opacity(0.8))
                 }
             }
             .padding(.horizontal, 30)
@@ -631,7 +623,7 @@ struct OnboardingView: View {
 }
 
 #Preview {
-    OnboardingView { showTutorial in
-        print("Onboarding complete, show tutorial: \(showTutorial)")
+    OnboardingView {
+        print("Onboarding complete")
     }
 }

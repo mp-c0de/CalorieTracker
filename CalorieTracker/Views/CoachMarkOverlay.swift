@@ -1,197 +1,89 @@
-// CoachMarkOverlay.swift - Tutorial tooltip overlay component
+// CoachMarkOverlay.swift - Simple arrow tooltip component
 // Made by mpcode
 
 import SwiftUI
 
-struct CoachMarkOverlay: View {
-    let coachMark: CoachMark
-    let currentStep: Int
-    let totalSteps: Int
-    let tabBarHeight: CGFloat
-    let onNext: () -> Void
-    let onSkip: () -> Void
+// MARK: - Simple Tooltip Arrow
+struct TooltipArrow: View {
+    let message: String
+    let arrowDirection: ArrowDirection
+    let onDismiss: () -> Void
 
-    @State private var tooltipSize: CGSize = .zero
+    @State private var isAnimating = false
+
+    enum ArrowDirection {
+        case up, down, left, right
+    }
 
     var body: some View {
-        GeometryReader { geometry in
-            ZStack {
-                // Dark overlay background
-                Color.black.opacity(0.75)
-                    .ignoresSafeArea()
-
-                // Cutout for highlighted tab (if applicable)
-                if let tabIndex = coachMark.tabIndex {
-                    tabHighlight(for: tabIndex, in: geometry)
-                }
-
-                // Tooltip bubble
-                tooltipBubble
-                    .position(tooltipPosition(in: geometry))
-            }
-        }
-        .transition(.opacity)
-    }
-
-    // MARK: - Tab Highlight
-    @ViewBuilder
-    private func tabHighlight(for tabIndex: Int, in geometry: GeometryProxy) -> some View {
-        // Calculate tab position more precisely
-        let tabWidth = geometry.size.width / 5
-        let tabX = tabWidth * CGFloat(tabIndex) + tabWidth / 2
-        // Position the highlight at the tab icon center
-        // Tab icons are in the middle of the tab bar, which sits just above the safe area
-        let safeAreaBottom = geometry.safeAreaInsets.bottom
-        // Position at the center of tab bar icons - adjusted lower to align with actual icon positions
-        let tabIconY = geometry.size.height - safeAreaBottom - 9
-
-        // Spotlight effect on the tab
-        Circle()
-            .fill(Color.white.opacity(0.15))
-            .frame(width: 65, height: 65)
-            .position(x: tabX, y: tabIconY)
-
-        // Pulsing ring
-        Circle()
-            .stroke(Color.white.opacity(0.6), lineWidth: 2)
-            .frame(width: 75, height: 75)
-            .position(x: tabX, y: tabIconY)
-    }
-
-    // MARK: - Tooltip Bubble
-    private var tooltipBubble: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            // Step indicator
-            HStack {
-                Text("Step \(currentStep) of \(totalSteps)")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-
-                Spacer()
-
-                Button("Skip") {
-                    onSkip()
-                }
-                .font(.caption)
-                .foregroundStyle(.secondary)
+        VStack(spacing: 0) {
+            if arrowDirection == .down {
+                arrowShape
+                    .rotationEffect(.degrees(180))
             }
 
-            // Title
-            Text(coachMark.title)
-                .font(.headline)
-                .fontWeight(.bold)
-                .foregroundStyle(.primary)
-
-            // Message
-            Text(coachMark.message)
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-                .fixedSize(horizontal: false, vertical: true)
-
-            // Progress bar
-            GeometryReader { geo in
-                ZStack(alignment: .leading) {
-                    RoundedRectangle(cornerRadius: 2)
-                        .fill(Color.gray.opacity(0.3))
-                        .frame(height: 4)
-
-                    RoundedRectangle(cornerRadius: 2)
-                        .fill(Color.blue)
-                        .frame(width: geo.size.width * (Double(currentStep) / Double(totalSteps)), height: 4)
+            HStack(spacing: 0) {
+                if arrowDirection == .right {
+                    arrowShape
+                        .rotationEffect(.degrees(-90))
                 }
-            }
-            .frame(height: 4)
 
-            // Navigation buttons
-            HStack {
-                if currentStep > 1 {
-                    Button {
-                        // Previous handled by parent if needed
-                    } label: {
-                        Text("Back")
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
+                HStack(spacing: 6) {
+                    Text(message)
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(.black)
+
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.caption)
+                        .foregroundStyle(.gray)
+                }
+                .padding(.horizontal, 14)
+                .padding(.vertical, 10)
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(.white)
+                        .shadow(color: .black.opacity(0.2), radius: 8, x: 0, y: 4)
+                        .shadow(color: .black.opacity(0.1), radius: 2, x: 0, y: 1)
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(Color.gray.opacity(0.2), lineWidth: 1)
+                )
+                .onTapGesture {
+                    withAnimation(.easeOut(duration: 0.2)) {
+                        onDismiss()
                     }
                 }
 
-                Spacer()
-
-                Button {
-                    onNext()
-                } label: {
-                    Text(currentStep == totalSteps ? "Done" : "Next")
-                        .font(.subheadline)
-                        .fontWeight(.semibold)
-                        .foregroundStyle(.white)
-                        .padding(.horizontal, 24)
-                        .padding(.vertical, 10)
-                        .background(Color.blue)
-                        .clipShape(Capsule())
+                if arrowDirection == .left {
+                    arrowShape
+                        .rotationEffect(.degrees(90))
                 }
+            }
+
+            if arrowDirection == .up {
+                arrowShape
             }
         }
-        .padding(20)
-        .frame(maxWidth: 320)
-        .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(Color(.systemBackground))
-                .shadow(color: .black.opacity(0.3), radius: 20, x: 0, y: 10)
-        )
-        .overlay(
-            // Arrow pointing to target
-            arrowView
-        )
-        .background(
-            GeometryReader { geo in
-                Color.clear.onAppear {
-                    tooltipSize = geo.size
-                }
+        // Wiggle animation
+        .scaleEffect(isAnimating ? 1.03 : 1.0)
+        .offset(y: isAnimating ? -2 : 2)
+        .onAppear {
+            withAnimation(
+                .easeInOut(duration: 0.6)
+                .repeatForever(autoreverses: true)
+            ) {
+                isAnimating = true
             }
-        )
-    }
-
-    // MARK: - Arrow
-    @ViewBuilder
-    private var arrowView: some View {
-        if coachMark.position == .above {
-            Triangle()
-                .fill(Color(.systemBackground))
-                .frame(width: 20, height: 12)
-                .rotationEffect(.degrees(180))
-                .offset(y: tooltipSize.height / 2 + 6)
-        } else {
-            Triangle()
-                .fill(Color(.systemBackground))
-                .frame(width: 20, height: 12)
-                .offset(y: -tooltipSize.height / 2 - 6)
         }
     }
 
-    // MARK: - Tooltip Position
-    private func tooltipPosition(in geometry: GeometryProxy) -> CGPoint {
-        let centerX = geometry.size.width / 2
-        let safeAreaBottom = geometry.safeAreaInsets.bottom
-
-        if let tabIndex = coachMark.tabIndex {
-            // Position relative to tab
-            let tabWidth = geometry.size.width / 5
-            _ = tabWidth * CGFloat(tabIndex) + tabWidth / 2  // tabX for reference
-            let tabIconY = geometry.size.height - safeAreaBottom - 30
-
-            switch coachMark.position {
-            case .above:
-                // Position tooltip above the tab, centered horizontally but clamped to screen edges
-                let clampedX = min(max(centerX, 170), geometry.size.width - 170)
-                return CGPoint(x: clampedX, y: tabIconY - 160)
-            case .below:
-                return CGPoint(x: centerX, y: geometry.size.height / 2)
-            default:
-                return CGPoint(x: centerX, y: geometry.size.height / 2)
-            }
-        }
-
-        // Default center position
-        return CGPoint(x: centerX, y: geometry.size.height / 2)
+    private var arrowShape: some View {
+        Triangle()
+            .fill(.white)
+            .frame(width: 16, height: 10)
+            .shadow(color: .black.opacity(0.15), radius: 2, x: 0, y: 2)
     }
 }
 
@@ -207,19 +99,100 @@ struct Triangle: Shape {
     }
 }
 
+// MARK: - Tooltip Modifier
+struct TooltipModifier: ViewModifier {
+    let id: String
+    let message: String
+    let arrowDirection: TooltipArrow.ArrowDirection
+    @Binding var isVisible: Bool
+
+    func body(content: Content) -> some View {
+        content
+            .overlay(alignment: alignment) {
+                if isVisible {
+                    TooltipArrow(
+                        message: message,
+                        arrowDirection: arrowDirection,
+                        onDismiss: {
+                            isVisible = false
+                            TutorialManager.shared.markHintSeen(id)
+                        }
+                    )
+                    .offset(offset)
+                    .transition(.scale.combined(with: .opacity))
+                }
+            }
+    }
+
+    private var alignment: Alignment {
+        switch arrowDirection {
+        case .up: return .bottom
+        case .down: return .top
+        case .left: return .trailing
+        case .right: return .leading
+        }
+    }
+
+    private var offset: CGSize {
+        switch arrowDirection {
+        case .up: return CGSize(width: 0, height: 8)
+        case .down: return CGSize(width: 0, height: -8)
+        case .left: return CGSize(width: 8, height: 0)
+        case .right: return CGSize(width: -8, height: 0)
+        }
+    }
+}
+
+extension View {
+    func tooltip(
+        id: String,
+        message: String,
+        arrow: TooltipArrow.ArrowDirection = .up,
+        isVisible: Binding<Bool>
+    ) -> some View {
+        modifier(TooltipModifier(
+            id: id,
+            message: message,
+            arrowDirection: arrow,
+            isVisible: isVisible
+        ))
+    }
+}
+
 #Preview {
-    CoachMarkOverlay(
-        coachMark: CoachMark(
-            id: "test",
-            title: "Add Food",
-            message: "Tap here to log your meals. You can use AI, scan barcodes, or add food manually.",
-            tabIndex: 1,
-            position: .above
-        ),
-        currentStep: 2,
-        totalSteps: 5,
-        tabBarHeight: 83,
-        onNext: {},
-        onSkip: {}
-    )
+    ZStack {
+        Color.gray.opacity(0.3)
+            .ignoresSafeArea()
+
+        VStack(spacing: 80) {
+            Button("Settings") { }
+                .padding()
+                .background(Color.blue)
+                .foregroundStyle(.white)
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+                .overlay(alignment: .bottom) {
+                    TooltipArrow(
+                        message: "Tap to open settings",
+                        arrowDirection: .up,
+                        onDismiss: {}
+                    )
+                    .offset(y: 50)
+                }
+
+            Button("Add Food") { }
+                .padding()
+                .background(Color.orange)
+                .foregroundStyle(.white)
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+                .overlay(alignment: .top) {
+                    TooltipArrow(
+                        message: "Add your meals here",
+                        arrowDirection: .down,
+                        onDismiss: {}
+                    )
+                    .offset(y: -50)
+                }
+        }
+        .padding()
+    }
 }

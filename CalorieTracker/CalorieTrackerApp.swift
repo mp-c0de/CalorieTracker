@@ -4,11 +4,16 @@
 
 import SwiftUI
 import SwiftData
+import TipKit
 
 @main
 struct CalorieTrackerApp: App {
     @State private var cloudSettings = CloudSettingsManager.shared
-    @State private var tutorialManager = TutorialManager.shared
+
+    init() {
+        // Configure TipKit for tutorial tips
+        TutorialManager.configureTips()
+    }
 
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
@@ -48,13 +53,10 @@ struct CalorieTrackerApp: App {
         WindowGroup {
             Group {
                 if cloudSettings.hasCompletedOnboarding {
-                    ContentView(tutorialManager: tutorialManager)
+                    ContentView()
                 } else {
-                    OnboardingView { showTutorial in
+                    OnboardingView {
                         cloudSettings.hasCompletedOnboarding = true
-                        if showTutorial {
-                            tutorialManager.shouldStartTutorial = true
-                        }
                     }
                 }
             }
