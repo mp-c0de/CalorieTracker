@@ -550,28 +550,28 @@ struct AddProductToLogSheet: View {
             // Main macros row
             HStack(spacing: 12) {
                 NutritionPreviewCard(
-                    value: Int(calculatedCalories),
+                    value: calculatedCalories,
                     unit: "kcal",
                     label: "Calories",
                     colour: .orange
                 )
 
                 NutritionPreviewCard(
-                    value: Int(calculatedProtein),
+                    value: calculatedProtein,
                     unit: "g",
                     label: "Protein",
                     colour: .red
                 )
 
                 NutritionPreviewCard(
-                    value: Int(calculatedCarbs),
+                    value: calculatedCarbs,
                     unit: "g",
                     label: "Carbs",
                     colour: .blue
                 )
 
                 NutritionPreviewCard(
-                    value: Int(calculatedFat),
+                    value: calculatedFat,
                     unit: "g",
                     label: "Fat",
                     colour: .yellow
@@ -581,21 +581,21 @@ struct AddProductToLogSheet: View {
             // Sugar row - show total and natural sugar
             HStack(spacing: 12) {
                 NutritionPreviewCard(
-                    value: Int(calculatedSugar),
+                    value: calculatedSugar,
                     unit: "g",
                     label: "Sugar",
                     colour: .pink
                 )
 
                 NutritionPreviewCard(
-                    value: Int(calculatedNaturalSugar),
+                    value: calculatedNaturalSugar,
                     unit: "g",
                     label: "Natural",
                     colour: .orange
                 )
 
                 NutritionPreviewCard(
-                    value: Int(calculatedAddedSugar),
+                    value: calculatedAddedSugar,
                     unit: "g",
                     label: "Added",
                     colour: .red
@@ -605,14 +605,14 @@ struct AddProductToLogSheet: View {
             // Additional nutrition row
             HStack(spacing: 12) {
                 NutritionPreviewCard(
-                    value: Int(calculatedFibre),
+                    value: calculatedFibre,
                     unit: "g",
                     label: "Fibre",
                     colour: .green
                 )
 
                 NutritionPreviewCard(
-                    value: Int(calculatedSodium),
+                    value: calculatedSodium,
                     unit: "mg",
                     label: "Sodium",
                     colour: .gray
@@ -742,7 +742,7 @@ struct AddProductToLogSheet: View {
 
 // MARK: - Nutrition Preview Card
 struct NutritionPreviewCard: View {
-    let value: Int
+    let value: Double
     let unit: String
     let label: String
     let colour: Color
@@ -750,7 +750,7 @@ struct NutritionPreviewCard: View {
     var body: some View {
         VStack(spacing: 4) {
             HStack(alignment: .firstTextBaseline, spacing: 2) {
-                Text("\(value)")
+                Text(formattedValue)
                     .font(.title2)
                     .fontWeight(.bold)
                 Text(unit)
@@ -767,6 +767,10 @@ struct NutritionPreviewCard: View {
         .background(colour.opacity(0.15))
         .clipShape(RoundedRectangle(cornerRadius: 10))
     }
+
+    private var formattedValue: String {
+        String(format: "%.2f", value)
+    }
 }
 
 // MARK: - Vitamin/Mineral Row
@@ -781,7 +785,7 @@ struct VitaminMineralRow: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
             Spacer()
-            Text(formatValue(value) + " " + unit)
+            Text(String(format: "%.2f", value) + " " + unit)
                 .font(.caption)
                 .fontWeight(.medium)
         }
@@ -789,16 +793,6 @@ struct VitaminMineralRow: View {
         .padding(.vertical, 6)
         .background(Color.purple.opacity(0.1))
         .clipShape(RoundedRectangle(cornerRadius: 6))
-    }
-
-    private func formatValue(_ value: Double) -> String {
-        if value < 1 {
-            return String(format: "%.2f", value)
-        } else if value < 10 {
-            return String(format: "%.1f", value)
-        } else {
-            return "\(Int(value))"
-        }
     }
 }
 

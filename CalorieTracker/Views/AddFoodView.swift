@@ -669,47 +669,48 @@ struct AddFoodView: View {
         var lines: [String] = []
         lines.append("Food: \(estimate.foodName)")
         lines.append("Amount: \(estimate.amount) \(estimate.unit)")
-        lines.append("Calories: \(estimate.calories) kcal")
-        lines.append("Protein: \(estimate.protein)g")
-        lines.append("Carbs: \(estimate.carbohydrates)g")
-        lines.append("Fat: \(estimate.fat)g")
-        if let sugar = estimate.sugar { lines.append("Sugar: \(sugar)g") }
-        if let naturalSugar = estimate.naturalSugar { lines.append("  Natural Sugar: \(naturalSugar)g") }
-        if let addedSugar = estimate.addedSugar { lines.append("  Added Sugar: \(addedSugar)g") }
-        if let fibre = estimate.fibre { lines.append("Fibre: \(fibre)g") }
-        if let sodium = estimate.sodium { lines.append("Sodium: \(sodium)mg") }
+        lines.append("Weight: \(String(format: "%.2f", estimate.weightInGrams))g")
+        lines.append("Calories: \(String(format: "%.2f", estimate.calories)) kcal")
+        lines.append("Protein: \(String(format: "%.2f", estimate.protein))g")
+        lines.append("Carbs: \(String(format: "%.2f", estimate.carbohydrates))g")
+        lines.append("Fat: \(String(format: "%.2f", estimate.fat))g")
+        if let sugar = estimate.sugar { lines.append("Sugar: \(String(format: "%.2f", sugar))g") }
+        if let naturalSugar = estimate.naturalSugar { lines.append("  Natural Sugar: \(String(format: "%.2f", naturalSugar))g") }
+        if let addedSugar = estimate.addedSugar { lines.append("  Added Sugar: \(String(format: "%.2f", addedSugar))g") }
+        if let fibre = estimate.fibre { lines.append("Fibre: \(String(format: "%.2f", fibre))g") }
+        if let sodium = estimate.sodium { lines.append("Sodium: \(String(format: "%.2f", sodium))mg") }
 
         // Vitamins
         lines.append("\n--- Vitamins ---")
-        if let v = estimate.vitaminA { lines.append("Vitamin A: \(v) mcg") }
-        if let v = estimate.vitaminC { lines.append("Vitamin C: \(v) mg") }
-        if let v = estimate.vitaminD { lines.append("Vitamin D: \(v) mcg") }
-        if let v = estimate.vitaminE { lines.append("Vitamin E: \(v) mg") }
-        if let v = estimate.vitaminK { lines.append("Vitamin K: \(v) mcg") }
-        if let v = estimate.vitaminB1 { lines.append("Vitamin B1: \(v) mg") }
-        if let v = estimate.vitaminB2 { lines.append("Vitamin B2: \(v) mg") }
-        if let v = estimate.vitaminB3 { lines.append("Vitamin B3: \(v) mg") }
-        if let v = estimate.vitaminB5 { lines.append("Vitamin B5: \(v) mg") }
-        if let v = estimate.vitaminB6 { lines.append("Vitamin B6: \(v) mg") }
-        if let v = estimate.vitaminB7 { lines.append("Vitamin B7: \(v) mcg") }
-        if let v = estimate.vitaminB12 { lines.append("Vitamin B12: \(v) mcg") }
-        if let v = estimate.folate { lines.append("Folate: \(v) mcg") }
+        if let v = estimate.vitaminA { lines.append("Vitamin A: \(String(format: "%.2f", v)) mcg") }
+        if let v = estimate.vitaminC { lines.append("Vitamin C: \(String(format: "%.2f", v)) mg") }
+        if let v = estimate.vitaminD { lines.append("Vitamin D: \(String(format: "%.2f", v)) mcg") }
+        if let v = estimate.vitaminE { lines.append("Vitamin E: \(String(format: "%.2f", v)) mg") }
+        if let v = estimate.vitaminK { lines.append("Vitamin K: \(String(format: "%.2f", v)) mcg") }
+        if let v = estimate.vitaminB1 { lines.append("Vitamin B1: \(String(format: "%.2f", v)) mg") }
+        if let v = estimate.vitaminB2 { lines.append("Vitamin B2: \(String(format: "%.2f", v)) mg") }
+        if let v = estimate.vitaminB3 { lines.append("Vitamin B3: \(String(format: "%.2f", v)) mg") }
+        if let v = estimate.vitaminB5 { lines.append("Vitamin B5: \(String(format: "%.2f", v)) mg") }
+        if let v = estimate.vitaminB6 { lines.append("Vitamin B6: \(String(format: "%.2f", v)) mg") }
+        if let v = estimate.vitaminB7 { lines.append("Vitamin B7: \(String(format: "%.2f", v)) mcg") }
+        if let v = estimate.vitaminB12 { lines.append("Vitamin B12: \(String(format: "%.2f", v)) mcg") }
+        if let v = estimate.folate { lines.append("Folate: \(String(format: "%.2f", v)) mcg") }
 
         // Minerals
         lines.append("\n--- Minerals ---")
-        if let v = estimate.calcium { lines.append("Calcium: \(v) mg") }
-        if let v = estimate.iron { lines.append("Iron: \(v) mg") }
-        if let v = estimate.zinc { lines.append("Zinc: \(v) mg") }
-        if let v = estimate.magnesium { lines.append("Magnesium: \(v) mg") }
-        if let v = estimate.potassium { lines.append("Potassium: \(v) mg") }
-        if let v = estimate.phosphorus { lines.append("Phosphorus: \(v) mg") }
-        if let v = estimate.selenium { lines.append("Selenium: \(v) mcg") }
-        if let v = estimate.copper { lines.append("Copper: \(v) mg") }
-        if let v = estimate.manganese { lines.append("Manganese: \(v) mg") }
-        if let v = estimate.chromium { lines.append("Chromium: \(v) mcg") }
-        if let v = estimate.molybdenum { lines.append("Molybdenum: \(v) mcg") }
-        if let v = estimate.iodine { lines.append("Iodine: \(v) mcg") }
-        if let v = estimate.chloride { lines.append("Chloride: \(v) mg") }
+        if let v = estimate.calcium { lines.append("Calcium: \(String(format: "%.2f", v)) mg") }
+        if let v = estimate.iron { lines.append("Iron: \(String(format: "%.2f", v)) mg") }
+        if let v = estimate.zinc { lines.append("Zinc: \(String(format: "%.2f", v)) mg") }
+        if let v = estimate.magnesium { lines.append("Magnesium: \(String(format: "%.2f", v)) mg") }
+        if let v = estimate.potassium { lines.append("Potassium: \(String(format: "%.2f", v)) mg") }
+        if let v = estimate.phosphorus { lines.append("Phosphorus: \(String(format: "%.2f", v)) mg") }
+        if let v = estimate.selenium { lines.append("Selenium: \(String(format: "%.2f", v)) mcg") }
+        if let v = estimate.copper { lines.append("Copper: \(String(format: "%.2f", v)) mg") }
+        if let v = estimate.manganese { lines.append("Manganese: \(String(format: "%.2f", v)) mg") }
+        if let v = estimate.chromium { lines.append("Chromium: \(String(format: "%.2f", v)) mcg") }
+        if let v = estimate.molybdenum { lines.append("Molybdenum: \(String(format: "%.2f", v)) mcg") }
+        if let v = estimate.iodine { lines.append("Iodine: \(String(format: "%.2f", v)) mcg") }
+        if let v = estimate.chloride { lines.append("Chloride: \(String(format: "%.2f", v)) mg") }
 
         lines.append("\nConfidence: \(Int(estimate.confidence * 100))%")
         if let notes = estimate.notes { lines.append("Notes: \(notes)") }

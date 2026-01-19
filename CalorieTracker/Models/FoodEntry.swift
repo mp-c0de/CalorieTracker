@@ -115,8 +115,10 @@ final class FoodEntry {
         self.aiPrompt = aiPrompt
 
         // Capture vitamin/mineral data from product (scaled to amount consumed)
-        if let product = product {
-            let scale = amount / 100.0  // Products store values per 100g
+        // Use calories ratio to calculate actual grams consumed (works for both g and piece units)
+        if let product = product, product.calories > 0 {
+            let gramsConsumed = (calories / product.calories) * 100.0
+            let scale = gramsConsumed / 100.0
             let capturedNutrients = Self.captureNutrients(from: product, scale: scale)
             if !capturedNutrients.isEmpty {
                 self.nutrientData = try? JSONEncoder().encode(capturedNutrients)
